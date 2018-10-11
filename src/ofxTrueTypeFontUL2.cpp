@@ -164,13 +164,13 @@ namespace ul2_ttf_utils{
         
 #ifdef TARGET_WIN32
         std::wstring dst = L"";
-        typedef codecvt<wchar_t, char, mbstate_t> codecvt_t;
+        typedef std::codecvt<wchar_t, char, mbstate_t> codecvt_t;
         
-        locale loc = locale("");
+        std::locale loc = std::locale("");
         if(!std::has_facet<codecvt_t>(loc))
             return dst;
         
-        const codecvt_t & conv = use_facet<codecvt_t>(loc);
+        const codecvt_t & conv = std::use_facet<codecvt_t>(loc);
         
         const std::size_t size = src.length();
         std::vector<wchar_t> dst_vctr(size);
