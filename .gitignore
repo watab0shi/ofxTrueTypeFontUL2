@@ -237,3 +237,9 @@ DerivedData/
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
+
+config.make
+Makefile
+openFrameworks-Info.plist
+Project.xcconfig
+*.xcodeproj
