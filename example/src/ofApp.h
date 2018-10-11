@@ -22,9 +22,9 @@ public:
     
 	ofxTrueTypeFontUL2 face;
 	ofxTrueTypeFontUL2 faceNavi;
-    wstring show;
-    string strAlign;
-    string strDirection;
+    std::wstring show;
+    std::string strAlign;
+    std::string strDirection;
     bool bitmapRendering;
     int align;
     

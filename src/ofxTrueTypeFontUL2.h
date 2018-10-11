@@ -34,35 +34,35 @@ public:
 	static void setGlobalDpi(int newDpi);
     
 	//-- default (without dpi), anti aliased, 96 dpi:
-	bool loadFont(string filename,float fontsize, bool bAntiAliased=true, bool makeContours=false, float simplifyAmt=0.3, int dpi=0, bool useTexture=true,string scriptTagName="");
+	bool loadFont(std::string filename,float fontsize, bool bAntiAliased=true, bool makeContours=false, float simplifyAmt=0.3, int dpi=0, bool useTexture=true,std::string scriptTagName="");
 	//add sub font ,What was read afterwards is used strongly. (Or set unicode range correctly . )
-	bool loadSubFont(string filename,float sizeRate=1.0f, float baseLineRate=0.0f ,int unicodeRangeStart=0x0000,int unicodeRangeEnd=0x0000 ,string scriptTagName="" );
+	bool loadSubFont(std::string filename,float sizeRate=1.0f, float baseLineRate=0.0f ,int unicodeRangeStart=0x0000,int unicodeRangeEnd=0x0000 ,std::string scriptTagName="" );
     
 	void reloadFont();
 	void unloadFont();
     
     
-	void drawString(wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
-	void drawString(string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	void drawString(std::wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	void drawString(std::string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
 	
-	void drawStringAsShapes(wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
-	void drawStringAsShapes(string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	void drawStringAsShapes(std::wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	void drawStringAsShapes(std::string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
 	
-	vector<ofPath> getStringAsPoints(wstring s,float x=0, float y=0,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
-	vector<ofPath> getStringAsPoints(string s,float x=0, float y=0,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	std::vector<ofPath> getStringAsPoints(std::wstring s,float x=0, float y=0,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	std::vector<ofPath> getStringAsPoints(std::string s,float x=0, float y=0,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
     
-	ofRectangle getStringBoundingBox(wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
-	ofRectangle getStringBoundingBox(string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	ofRectangle getStringBoundingBox(std::wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	ofRectangle getStringBoundingBox(std::string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
 	
-	vector<ofRectangle> getStringBoxes(wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
-	vector<ofRectangle> getStringBoxes(string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	std::vector<ofRectangle> getStringBoxes(std::wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	std::vector<ofRectangle> getStringBoxes(std::string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
     
-	ofPath getCharacterAsPoints(wstring character);
-	ofPath getCharacterAsPoints(string character);
+	ofPath getCharacterAsPoints(std::wstring character);
+	ofPath getCharacterAsPoints(std::string character);
 	
 	//Ready for ofx3DFont
-	void getLayoutData(vector<ofxFaceVec2>&facePosis,string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
-	void getLayoutData(vector<ofxFaceVec2>&facePosis,wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	void getLayoutData(std::vector<ofxFaceVec2>&facePosis,std::string s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
+	void getLayoutData(std::vector<ofxFaceVec2>&facePosis,std::wstring s, float x, float y,float width=0,float height=0,int textAlign=UL2_TEXT_ALIGN_INVALID);
 	ofPath getCountours(int index);
 
 	bool  isLoaded();

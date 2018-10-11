@@ -10,14 +10,15 @@
 
 
 #include "ofGraphics.h"
+#include "ofPoint.h"
 
 static int ttfGlobalDpi = 96;
 
 //--------------------------------------------------
 
 typedef struct {
-	string filename;
-	string scriptTagName;
+	std::string filename;
+	std::string scriptTagName;
 	float fontsize;
 	float baseLine;
 	FT_Face face;
@@ -87,14 +88,14 @@ typedef enum {
 namespace ul2_ttf_utils{
     
 #ifdef TARGET_WIN32
-	typedef basic_string<uint32_t> ustring;
+	typedef std::basic_string<uint32_t> ustring;
 #else
-	typedef wstring ustring;
+	typedef std::wstring ustring;
 #endif
     
     template <class T>
-    wstring convToUCS4(basic_string<T> src) {
-        wstring dst = L"";
+    std::wstring convToUCS4(std::basic_string<T> src) {
+        std::wstring dst = L"";
         // convert UTF-8 on char or wchar_t to UCS-4 on wchar_t
         int size = src.size();
         int index = 0;
@@ -140,7 +141,7 @@ namespace ul2_ttf_utils{
     }
     
 #ifdef TARGET_WIN32
-    ustring convUTF16ToUCS4(wstring src) {
+    ustring convUTF16ToUCS4(std::wstring src) {
         // decord surrogate pairs
         ustring dst;
         for (std::wstring::iterator iter=src.begin(); iter!=src.end(); ++iter) {
@@ -159,10 +160,10 @@ namespace ul2_ttf_utils{
         return dst;
     }
 #endif
-    wstring convToWString(string src) {
+    std::wstring convToWString(std::string src) {
         
 #ifdef TARGET_WIN32
-        wstring dst = L"";
+        std::wstring dst = L"";
         typedef codecvt<wchar_t, char, mbstate_t> codecvt_t;
         
         locale loc = locale("");
@@ -189,7 +190,7 @@ namespace ul2_ttf_utils{
         
         return dst;
 #elif defined __clang__
-        wstring dst = L"";
+        std::wstring dst = L"";
         for (int i=0; i<src.size(); ++i)
             dst += src[i];
 #if defined(__clang_major__) && (__clang_major__ >= 4)
@@ -201,7 +202,7 @@ namespace ul2_ttf_utils{
 #endif
     }
     
-    ustring convertTTFwstring(wstring s){
+    ustring convertTTFwstring(std::wstring s){
 #ifdef TARGET_WIN32
         return convUTF16ToUCS4(s);
 #elif defined(__clang_major__) && (__clang_major__ <= 3)
@@ -239,10 +240,10 @@ static FT_Library library;
 static bool printVectorInfo = false;
 
 //--------------------------------------------------------
-static ofTTFCharacter makeContoursForCharacter(FT_Face &face);
+static ofPath makeContoursForCharacter(FT_Face &face);
 
 /*
-static ofTTFCharacter makeContoursForCharacter(FT_Face &face){
+static ofPath makeContoursForCharacter(FT_Face &face){
     
     //int num			= face->glyph->outline.n_points;
     int nContours	= face->glyph->outline.n_contours;
@@ -251,7 +252,7 @@ static ofTTFCharacter makeContoursForCharacter(FT_Face &face){
     char * tags		= face->glyph->outline.tags;
     FT_Vector * vec = face->glyph->outline.points;
     
-    ofTTFCharacter charOutlines;
+    ofPath charOutlines;
     charOutlines.setUseShapeColor(false);
     
     for(int k = 0; k < nContours; k++){
@@ -378,12 +379,12 @@ static ofTTFCharacter makeContoursForCharacter(FT_Face &face){
 }
 */
 
-static ofTTFCharacter makeContoursForCharacter(FT_Face &face){
+static ofPath makeContoursForCharacter(FT_Face &face){
 	bool vFlip=true;
 	double x1, y1, x2, y2, x3, y3,x4,y4;
 	const FT_Outline* outline= &face->glyph->outline;
 
-    ofTTFCharacter charOutlines;
+    ofPath charOutlines;
     charOutlines.setUseShapeColor(false);
 
     FT_Vector   v_last;
@@ -580,16 +581,16 @@ Close:
 
 
 #ifdef TARGET_OSX
-static string osxFontPathByName( string fontname ){
+static std::string osxFontPathByName( std::string fontname ){
 	CFStringRef targetName = CFStringCreateWithCString(NULL, fontname.c_str(), kCFStringEncodingUTF8);
 	CTFontDescriptorRef targetDescriptor = CTFontDescriptorCreateWithNameAndSize(targetName, 0.0);
 	CFURLRef targetURL = (CFURLRef) CTFontDescriptorCopyAttribute(targetDescriptor, kCTFontURLAttribute);
-	string fontPath = "";
+	std::string fontPath = "";
 	
 	if(targetURL) {
 		UInt8 buffer[PATH_MAX];
 		CFURLGetFileSystemRepresentation(targetURL, true, buffer, PATH_MAX);
-		fontPath = string((char *)buffer);
+		fontPath = std::string((char *)buffer);
 		CFRelease(targetURL);
 	}
 	
@@ -603,7 +604,7 @@ static string osxFontPathByName( string fontname ){
 #ifdef TARGET_WIN32
 #include <map>
 // font font face -> file name name mapping
-static map<string, string> fonts_table;
+static std::map<std::string, std::string> fonts_table;
 // read font linking information from registry, and store in std::map
 static void initWindows(){
 	LONG l_ret;
@@ -647,7 +648,7 @@ static void initWindows(){
 	char fontsPath[2048];
     SHGetKnownFolderIDList(FOLDERID_Fonts, 0, NULL, &ppidl);
     SHGetPathFromIDList(ppidl,&fontsPath);*/
-    string fontsDir = getenv ("windir");
+    std::string fontsDir = getenv ("windir");
     fontsDir += "\\Fonts\\";
 	for (DWORD i = 0; i < value_count; ++i)
 	{
@@ -662,8 +663,8 @@ static void initWindows(){
 
             wcstombs(value_name_char,value_name,2048);
 			wcstombs(value_data_char,reinterpret_cast<wchar_t *>(value_data),2048);
-			string curr_face = value_name_char;
-			string font_file = value_data_char;
+			std::string curr_face = value_name_char;
+			std::string font_file = value_data_char;
 			curr_face = curr_face.substr(0, curr_face.find('(') - 1);
 			fonts_table[curr_face] = fontsDir + font_file;
 	}
@@ -674,11 +675,11 @@ static void initWindows(){
 	l_ret = RegCloseKey(key_ft);
 }
 
-static string winFontPathByName( string fontname ){
+static std::string winFontPathByName( std::string fontname ){
     if(fonts_table.find(fontname)!=fonts_table.end()){
         return fonts_table[fontname];
     }
-    for(map<string,string>::iterator it = fonts_table.begin(); it!=fonts_table.end(); it++){
+    for(std::map<std::string,std::string>::iterator it = fonts_table.begin(); it!=fonts_table.end(); it++){
         if(ofIsStringInString(ofToLower(it->first),ofToLower(fontname))) return it->second;
     }
     return "";
@@ -686,8 +687,8 @@ static string winFontPathByName( string fontname ){
 #endif
 
 #ifdef TARGET_LINUX
-static string linuxFontPathByName(string fontname){
-	string filename;
+static std::string linuxFontPathByName(std::string fontname){
+	std::string filename;
 	FcPattern * pattern = FcNameParse((const FcChar8*)fontname.c_str());
 	FcBool ret = FcConfigSubstitute(0,pattern,FcMatchPattern);
 	if(!ret){
@@ -716,7 +717,7 @@ static string linuxFontPathByName(string fontname){
 
 
 
-static bool loadFontFace(string fontname, int _fontSize, FT_Face & face, string & filename){
+static bool loadFontFace(std::string fontname, int _fontSize, FT_Face & face, std::string & filename){
 	filename = ofToDataPath(fontname,true);
 	ofFile fontFile(filename,ofFile::Reference);
 	int fontID = 0;
@@ -753,7 +754,7 @@ static bool loadFontFace(string fontname, int _fontSize, FT_Face & face, string 
 	err = FT_New_Face( library, filename.c_str(), fontID, &face );
 	if (err) {
 		// simple error table in lieu of full table (see fterrors.h)
-		string errorString = "unknown freetype";
+		std::string errorString = "unknown freetype";
 		if(err == 1) errorString = "INVALID FILENAME";
 		ofLogError("ofTrueTypeFont") << "loadFontFace(): couldn't create new face for \"" << fontname << "\": FT_Error " << err << " " << errorString;
 		return false;
@@ -771,35 +772,35 @@ public:
 	Impl();
 	~Impl() {};
     
-	bool implLoadFont(string filename, float fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int dpi,bool useTexture,string scriptTagName);
-	bool implLoadSubFont(string filename,float sizeRate, float baseLineRate ,int unicodeRangeStart,int unicodeRangeEnd,string scriptTagName);
-	bool implLoadSubFontVal(string filename,float fontsize, float baseLine ,int unicodeRangeStart,int unicodeRangeEnd,string scriptTagName);
+	bool implLoadFont(std::string filename, float fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int dpi,bool useTexture,std::string scriptTagName);
+	bool implLoadSubFont(std::string filename,float sizeRate, float baseLineRate ,int unicodeRangeStart,int unicodeRangeEnd,std::string scriptTagName);
+	bool implLoadSubFontVal(std::string filename,float fontsize, float baseLine ,int unicodeRangeStart,int unicodeRangeEnd,std::string scriptTagName);
     
 	void implUnloadFont();
     
-	vector <ofTTFCharacter> charOutlines;
+	std::vector <ofPath> charOutlines;
 	
 
-	vector<ul2_char_layouts_info> cps;  // properties for each character
+	std::vector<ul2_char_layouts_info> cps;  // properties for each character
     
 	void drawChar(int c, float x, float y);
 	void drawCharAsShape(int c, float x, float y);
     
-  	vector<ofTexture> textures;
+  	std::vector<ofTexture> textures;
 	ofMesh stringQuads;
     
 	int getCharID(const int codepoint,const unsigned int faceId);
 	void loadChar(const int & charID);
     
-	vector<ul2_face_info>  faces;
-	vector<ul2_string_layouts_info> getHbPosition(wstring wsrc);
-	map<wstring,vector<ul2_string_layouts_info> > hbPositionCache;
-	vector<ul2_face_codepoint> loadedChars;
+	std::vector<ul2_face_info>  faces;
+	std::vector<ul2_string_layouts_info> getHbPosition(std::wstring wsrc);
+  std::map<std::wstring,std::vector<ul2_string_layouts_info> > hbPositionCache;
+	std::vector<ul2_face_codepoint> loadedChars;
 	
 	template <class T>
-	void commonLayouts(wstring src ,float x, float y,float width,float height,int textAlign,ul2_rendering_types type ,T &result);
+	void commonLayouts(std::wstring src ,float x, float y,float width,float height,int textAlign,ul2_rendering_types type ,T &result);
 	template <class T>
-	void commonLayouts2(wstring src ,float x, float y,float width,float height,ul2_text_align textAlign,vector<ofRectangle> *lineWidthList,ul2_rendering_types type ,T &result);
+	void commonLayouts2(std::wstring src ,float x, float y,float width,float height,ul2_text_align textAlign,std::vector<ofRectangle> *lineWidthList,ul2_rendering_types type ,T &result);
     
 	void addOTFeature(const char*feature_tag,unsigned int value,unsigned int  start=0,unsigned int end=static_cast<unsigned>(-1));
 	void removeOTFeature(const char*feature_tag);
@@ -865,7 +866,7 @@ ofxTrueTypeFontUL2::Impl::Impl(){
 	bWordWrap=true;
 }
 
-bool ofxTrueTypeFontUL2::Impl::implLoadFont(string filename, float fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi,bool useTexture,string scriptTagName) {
+bool ofxTrueTypeFontUL2::Impl::implLoadFont(std::string filename, float fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi,bool useTexture,std::string scriptTagName) {
 	bMakeContours_ = makeContours;
 	bUseTexture_ = useTexture;
     
@@ -911,7 +912,7 @@ void ofxTrueTypeFontUL2::Impl::implUnloadFont(){
 	bLoadedOk_ = false;
 }
 
-bool ofxTrueTypeFontUL2::Impl::implLoadSubFontVal(string filename,float fontsize, float baseLine,int unicodeRangeStart,int unicodeRangeEnd,string scriptTagName){
+bool ofxTrueTypeFontUL2::Impl::implLoadSubFontVal(std::string filename,float fontsize, float baseLine,int unicodeRangeStart,int unicodeRangeEnd,std::string scriptTagName){
     
 	ul2_face_info set;
 	//set.filename=filename;
@@ -927,7 +928,7 @@ bool ofxTrueTypeFontUL2::Impl::implLoadSubFontVal(string filename,float fontsize
      err = FT_New_Face(library, ofToDataPath(set.filename).c_str(), 0, &set.face);
      if (err) {
      // simple error table in lieu of full table (see fterrors.h)
-     string errorString = "unknown freetype";
+     std::string errorString = "unknown freetype";
      if (err == 1)errorString = "INVALID FILENAME";
      ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUL2::loadFont - %s: %s: FT_Error = %d", errorString.c_str(), filename.c_str(), err);
      return false;
@@ -975,7 +976,7 @@ bool ofxTrueTypeFontUL2::Impl::implLoadSubFontVal(string filename,float fontsize
 	return bLoadedOk_;
 }
 
-bool ofxTrueTypeFontUL2::Impl::implLoadSubFont(string filename,float sizeRate, float baseLineRate,int unicodeRangeStart,int unicodeRangeEnd,string scriptTagName){
+bool ofxTrueTypeFontUL2::Impl::implLoadSubFont(std::string filename,float sizeRate, float baseLineRate,int unicodeRangeStart,int unicodeRangeEnd,std::string scriptTagName){
 	return implLoadSubFontVal(filename,baseFontSize_*sizeRate,baseFontSize_*baseLineRate,unicodeRangeStart,unicodeRangeEnd,scriptTagName);
 }
 
@@ -1031,9 +1032,9 @@ void ofxTrueTypeFontUL2::Impl::printOTFeatures(){
 	}
 }
 
-vector<ul2_string_layouts_info> ofxTrueTypeFontUL2::Impl::getHbPosition(wstring wsrc) {
+std::vector<ul2_string_layouts_info> ofxTrueTypeFontUL2::Impl::getHbPosition(std::wstring wsrc) {
 	
-	vector<ul2_string_layouts_info> result;
+	std::vector<ul2_string_layouts_info> result;
 	if(bUseLayoutCache){
 		result=hbPositionCache[wsrc];
 		if(!result.empty())return result;
@@ -1118,9 +1119,9 @@ vector<ul2_string_layouts_info> ofxTrueTypeFontUL2::Impl::getHbPosition(wstring 
 		v.cy = cy;
 		v.hasFace = cps[cy].hasFace;
 		v.character = src[i];
-		v.breakable = (ul2_ttf_utils::SetNotEOL.find(src[i])==string::npos &&
-                       (ul2_ttf_utils::isCJK(src[i])||(i<len-1?ul2_ttf_utils::isCJK(src[i+1]):true)||ul2_ttf_utils::SetBreakable.find(src[i])!=string::npos) &&
-                       (i<len-1? ul2_ttf_utils::SetNotSOL.find(src[i+1])==string::npos :true))?1:0;
+		v.breakable = (ul2_ttf_utils::SetNotEOL.find(src[i])==std::string::npos &&
+                       (ul2_ttf_utils::isCJK(src[i])||(i<len-1?ul2_ttf_utils::isCJK(src[i+1]):true)||ul2_ttf_utils::SetBreakable.find(src[i])!=std::string::npos) &&
+                       (i<len-1? ul2_ttf_utils::SetNotSOL.find(src[i+1])==std::string::npos :true))?1:0;
 		result.push_back(v);
         
 		//On line-break,activate default face;
@@ -1169,16 +1170,16 @@ vector<ul2_string_layouts_info> ofxTrueTypeFontUL2::Impl::getHbPosition(wstring 
 }
 
 template<class T1,class T2>inline void _push_back(T1 &t1,T2 t2){}
-template<class T>inline void _push_back(vector<T>&t1,T t2){t1.push_back(t2);}
+template<class T>inline void _push_back(std::vector<T>&t1,T t2){t1.push_back(t2);}
 template<class T>inline void _setRect(T &t,float x,float y,float w,float h){}
 inline void _setRect(ofRectangle &t,float x,float y,float w,float h){t.x=x;t.y=y;t.width=w,t.height=h;}
 template<class T>inline void _push_layout(T&t,float x,float y,int i){}
-inline void _push_layout(vector<ofxFaceVec2> &t,float x,float y,int i){ofxFaceVec2 p;p.x=x;p.y=y;p.faceIndex=i; t.push_back(p);}
+inline void _push_layout(std::vector<ofxFaceVec2> &t,float x,float y,int i){ofxFaceVec2 p;p.x=x;p.y=y;p.faceIndex=i; t.push_back(p);}
 
 template<class T>
-void ofxTrueTypeFontUL2::Impl::commonLayouts2(wstring src ,float x, float y,float width,float height,ul2_text_align textAlign,vector<ofRectangle> *lineWidthList,ul2_rendering_types type ,T &result){
+void ofxTrueTypeFontUL2::Impl::commonLayouts2(std::wstring src ,float x, float y,float width,float height,ul2_text_align textAlign,std::vector<ofRectangle> *lineWidthList,ul2_rendering_types type ,T &result){
     
-	const vector<ul2_string_layouts_info> &pos=getHbPosition(src);
+	const std::vector<ul2_string_layouts_info> &pos=getHbPosition(src);
 	const int len = pos.size();
     
 	//control direction
@@ -1355,10 +1356,10 @@ void ofxTrueTypeFontUL2::Impl::commonLayouts2(wstring src ,float x, float y,floa
 }
 
 template<class T>
-void ofxTrueTypeFontUL2::Impl::commonLayouts(wstring src ,float x, float y,float width,float height,int textAlign,ul2_rendering_types type ,T &result){
+void ofxTrueTypeFontUL2::Impl::commonLayouts(std::wstring src ,float x, float y,float width,float height,int textAlign,ul2_rendering_types type ,T &result){
 	if(textAlign!=UL2_TEXT_ALIGN_INVALID){
 		ul2_text_align align=UL2_TEXT_ALIGN_INVALID;
-		vector<ofRectangle> wList;
+		std::vector<ofRectangle> wList;
 		commonLayouts2(src,0,0,width,height,UL2_TEXT_ALIGN_INVALID,NULL,UL2_GET_LINE_WIDTH,wList);
 		ofRectangle vBox;
 		const unsigned int size=wList.size();
@@ -1553,7 +1554,7 @@ void ofxTrueTypeFontUL2::Impl::loadChar(const int & charID) {
 			textures[i].setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
 		}
 		
-		textures[i].loadData(atlasPixels.getPixels(), atlasPixels.getWidth(), atlasPixels.getHeight(), glFormat[1]);
+		textures[i].loadData(atlasPixels.getData(), atlasPixels.getWidth(), atlasPixels.getHeight(), glFormat[1]);
 	}
 }
 
@@ -1718,11 +1719,11 @@ ofxTrueTypeFontUL2::~ofxTrueTypeFontUL2() {
 }
 
 //-----------------------------------------------------------
-bool ofxTrueTypeFontUL2::loadFont(string filename, float fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int _dpi,bool useTexture,string scriptTagName) {
+bool ofxTrueTypeFontUL2::loadFont(std::string filename, float fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int _dpi,bool useTexture,std::string scriptTagName) {
 	return mImpl->implLoadFont(filename, fontsize, _bAntiAliased, makeContours, _simplifyAmt, _dpi,useTexture,scriptTagName);
 }
 
-bool ofxTrueTypeFontUL2::loadSubFont(string filename,float sizeRate, float baseLineRate,int unicodeRangeStart,int unicodeRangeEnd,string scriptTagName){
+bool ofxTrueTypeFontUL2::loadSubFont(std::string filename,float sizeRate, float baseLineRate,int unicodeRangeStart,int unicodeRangeEnd,std::string scriptTagName){
 	return mImpl->implLoadSubFont(filename, sizeRate, baseLineRate,unicodeRangeStart,unicodeRangeEnd,scriptTagName);
 }
 
@@ -1884,8 +1885,8 @@ void ofxTrueTypeFontUL2::clearCache(bool all){
 }
 
 //-----------------------------------------------------------
-vector<ofRectangle> ofxTrueTypeFontUL2::getStringBoxes(wstring src, float x, float y,float width,float height,int textAlign){
-	vector<ofRectangle> result;
+std::vector<ofRectangle> ofxTrueTypeFontUL2::getStringBoxes(std::wstring src, float x, float y,float width,float height,int textAlign){
+	std::vector<ofRectangle> result;
 	if (!mImpl->bLoadedOk_) {
 		ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUL2::getCaracterBoundingBoxes - font not allocated");
 		return result;
@@ -1893,12 +1894,12 @@ vector<ofRectangle> ofxTrueTypeFontUL2::getStringBoxes(wstring src, float x, flo
 	mImpl->commonLayouts(src,x,y,width, height, textAlign,UL2_GET_BOXES,result);
 	return result;
 }
-vector<ofRectangle> ofxTrueTypeFontUL2::getStringBoxes(string src, float x, float y,float width,float height,int textAlign){
+std::vector<ofRectangle> ofxTrueTypeFontUL2::getStringBoxes(std::string src, float x, float y,float width,float height,int textAlign){
 	return getStringBoxes(ul2_ttf_utils::convToWString(src), x, y,width, height, textAlign);
 }
 
 //-----------------------------------------------------------
-ofRectangle ofxTrueTypeFontUL2::getStringBoundingBox(wstring src, float x, float y,float width,float height,int textAlign){
+ofRectangle ofxTrueTypeFontUL2::getStringBoundingBox(std::wstring src, float x, float y,float width,float height,int textAlign){
 	ofRectangle rect(0,0,0,0);
 	if (!mImpl->bLoadedOk_) {
 		ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUL2::getStringBoundingBox - font not allocated");
@@ -1907,14 +1908,14 @@ ofRectangle ofxTrueTypeFontUL2::getStringBoundingBox(wstring src, float x, float
 	mImpl->commonLayouts(src,x,y,width, height, textAlign,UL2_GET_BOUNDINGBOX,rect);
 	return rect;
 }
-ofRectangle ofxTrueTypeFontUL2::getStringBoundingBox(string src, float x, float y,float width,float height,int textAlign){
+ofRectangle ofxTrueTypeFontUL2::getStringBoundingBox(std::string src, float x, float y,float width,float height,int textAlign){
 	return getStringBoundingBox(ul2_ttf_utils::convToWString(src), x, y,width, height, textAlign);
 }
 
 
 //-----------------------------------------------------------
-vector<ofPath> ofxTrueTypeFontUL2::getStringAsPoints(wstring src,float x, float y,float width,float height,int textAlign) {
-	vector<ofPath> shapes;
+std::vector<ofPath> ofxTrueTypeFontUL2::getStringAsPoints(std::wstring src,float x, float y,float width,float height,int textAlign) {
+	std::vector<ofPath> shapes;
 	if (!mImpl->bLoadedOk_) {
 		ofLog(OF_LOG_ERROR,"Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
 		return shapes;
@@ -1926,21 +1927,21 @@ vector<ofPath> ofxTrueTypeFontUL2::getStringAsPoints(wstring src,float x, float 
 	mImpl->commonLayouts(src,x,y,width, height, textAlign,UL2_GET_SHAPES,shapes);
 	return shapes;
 }
-vector<ofPath> ofxTrueTypeFontUL2::getStringAsPoints(string src,float x, float y,float width,float height,int textAlign) {
+std::vector<ofPath> ofxTrueTypeFontUL2::getStringAsPoints(std::string src,float x, float y,float width,float height,int textAlign) {
 	return getStringAsPoints(ul2_ttf_utils::convToWString(src),x,y,width, height, textAlign);
 }
 
 
-ofPath ofxTrueTypeFontUL2::getCharacterAsPoints(wstring src) {  
+ofPath ofxTrueTypeFontUL2::getCharacterAsPoints(std::wstring src) {  
 	ul2_ttf_utils::ustring character=ul2_ttf_utils::convertTTFwstring(src);
 	return getStringAsPoints(src.substr(0,1))[0];
 }
-ofPath ofxTrueTypeFontUL2::getCharacterAsPoints(string character) {
+ofPath ofxTrueTypeFontUL2::getCharacterAsPoints(std::string character) {
 	return getCharacterAsPoints(ul2_ttf_utils::convToWString(character));
 }
 
 //-----------------------------------------------------------
-void ofxTrueTypeFontUL2::drawString(wstring src, float x, float y,float width,float height,int textAlign) {
+void ofxTrueTypeFontUL2::drawString(std::wstring src, float x, float y,float width,float height,int textAlign) {
 	if (!mImpl->bLoadedOk_){
 		ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUL2::drawString - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
 		return;
@@ -1952,12 +1953,12 @@ void ofxTrueTypeFontUL2::drawString(wstring src, float x, float y,float width,fl
 	bool result;
 	mImpl->commonLayouts(src,x,y,width, height, textAlign,UL2_DRAW_TEXTURE,result);
 }
-void ofxTrueTypeFontUL2::drawString(string src, float x, float y,float width,float height,int textAlign) {
+void ofxTrueTypeFontUL2::drawString(std::string src, float x, float y,float width,float height,int textAlign) {
 	return drawString(ul2_ttf_utils::convToWString(src), x, y,width, height, textAlign);
 }
 
 //-----------------------------------------------------------
-void ofxTrueTypeFontUL2::drawStringAsShapes(wstring s, float x, float y,float width,float height,int textAlign) {
+void ofxTrueTypeFontUL2::drawStringAsShapes(std::wstring s, float x, float y,float width,float height,int textAlign) {
 	if (!mImpl->bLoadedOk_) {
 		ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUL2::drawStringAsShapes - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
 		return;
@@ -1969,19 +1970,19 @@ void ofxTrueTypeFontUL2::drawStringAsShapes(wstring s, float x, float y,float wi
 	bool result;
 	mImpl->commonLayouts(s,x,y,width, height, textAlign,UL2_RRAW_SHAPE,result);
 }
-void ofxTrueTypeFontUL2::drawStringAsShapes(string s, float x, float y,float width,float height,int textAlign) {
+void ofxTrueTypeFontUL2::drawStringAsShapes(std::string s, float x, float y,float width,float height,int textAlign) {
 	return drawStringAsShapes(ul2_ttf_utils::convToWString(s), x, y,width, height, textAlign);
 }
 
 	//Ready for ofx3DFont
-void ofxTrueTypeFontUL2::getLayoutData(vector<ofxFaceVec2>&facePosis,wstring s, float x, float y,float width,float height,int textAlign){
+void ofxTrueTypeFontUL2::getLayoutData(std::vector<ofxFaceVec2>&facePosis,std::wstring s, float x, float y,float width,float height,int textAlign){
 	if (!mImpl->bLoadedOk_) {
 		ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUL2::getLayoutData - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
 		return;
 	}
 	mImpl->commonLayouts(s,x,y,width, height, textAlign,UL2_GET_LAYOUTS,facePosis);
 }
-void ofxTrueTypeFontUL2::getLayoutData(vector<ofxFaceVec2>&facePosis,string s, float x, float y,float width,float height,int textAlign){
+void ofxTrueTypeFontUL2::getLayoutData(std::vector<ofxFaceVec2>&facePosis,std::string s, float x, float y,float width,float height,int textAlign){
 	getLayoutData(facePosis,ul2_ttf_utils::convToWString(s), x, y,width, height, textAlign);
 }
 ofPath ofxTrueTypeFontUL2::getCountours(int index){
